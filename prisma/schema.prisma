@@ -13,17 +13,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  refreshToken String?  @map("refresh_token")
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tasks Task[]
+
+  @@map("users")
+}
+
 enum TaskStatus {
   DONE
   UNDONE
 }
 
 model Task {
-  id          String     @id @default(uuid())
+  id          String     @id @default(cuid())
   title       String
   description String?
   status      TaskStatus @default(UNDONE)
   priority    Int
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("tasks")
 }

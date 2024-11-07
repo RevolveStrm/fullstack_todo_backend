@@ -1,23 +1,23 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Task, TaskStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { Task, TaskStatus } from '@prisma/client';
 import { GetTasksQueryDto } from './dto/get-tasks-query.dto';
-import { Prisma } from '@prisma/client';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
 	constructor(private prismaService: PrismaService) {}
 
-	public async createTask(createTaskBody: CreateTaskDto) {
-		if (await this.checkTaskExisting({ title: createTaskBody.title })) {
-			throw new BadRequestException('Task with the same title already exists.');
-		}
-		return this.prismaService.task.create({
-			data: createTaskBody,
-		});
-	}
+	// public async createTask(createTaskBody: CreateTaskDto) {
+	// 	if (await this.checkTaskExisting({ title: createTaskBody.title })) {
+	// 		throw new BadRequestException('Task with the same title already exists.');
+	// 	}
+	// 	return this.prismaService.task.create({
+	// 		data: createTaskBody,
+	// 	});
+	// }
 
 	public getTasks(query: GetTasksQueryDto): Promise<Task[]> {
 		const options: Prisma.TaskFindManyArgs = {};

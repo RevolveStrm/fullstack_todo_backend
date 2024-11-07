@@ -1,31 +1,40 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { TasksService } from './tasks.service';
-import { CreateTaskDto } from './dto/create-task.dto';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Task, TaskStatus } from '@prisma/client';
+import { AccessTokenGuard } from 'src/guards/access-token.guard';
+import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksQueryDto } from './dto/get-tasks-query.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { TasksService } from './tasks.service';
 
 @Controller('tasks')
+@ApiTags('tasks')
+@UseGuards(AccessTokenGuard)
 export class TasksController {
 	constructor(private tasksService: TasksService) {}
 
 	@Get('/')
-	public getTasks(@Query() query: GetTasksQueryDto): Promise<Task[]> {
-		return this.tasksService.getTasks(query);
+	public getTasks() {
+		return ['tasks'];
 	}
 
-	@Post('/')
-	public createTask(@Body() createTaskBody: CreateTaskDto): Promise<Task> {
-		return this.tasksService.createTask(createTaskBody);
-	}
+	// @Get('/')
+	// public getTasks(@Query() query: GetTasksQueryDto): Promise<Task[]> {
+	// 	return this.tasksService.getTasks(query);
+	// }
 
-	@Patch(':id')
-	public updateTask(@Param('id', ParseUUIDPipe) id: string, @Body() updateTaskBody: UpdateTaskDto): Promise<Task> {
-		return this.tasksService.updateTask(id, updateTaskBody);
-	}
+	// @Post('/')
+	// public createTask(@Body() createTaskBody: CreateTaskDto): Promise<Task> {
+	// 	return this.tasksService.createTask(createTaskBody);
+	// }
 
-	@Delete(':id')
-	public deleteTask(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
-		return this.tasksService.deleteTask(id);
-	}
+	// @Patch(':id')
+	// public updateTask(@Param('id', ParseUUIDPipe) id: string, @Body() updateTaskBody: UpdateTaskDto): Promise<Task> {
+	// 	return this.tasksService.updateTask(id, updateTaskBody);
+	// }
+
+	// @Delete(':id')
+	// public deleteTask(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
+	// 	return this.tasksService.deleteTask(id);
+	// }
 }
