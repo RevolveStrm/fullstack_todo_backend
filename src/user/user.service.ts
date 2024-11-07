@@ -34,7 +34,7 @@ export class UserService {
 		});
 	}
 
-	async updateRefreshToken(userId: string, refreshToken: string) {
+	async updateRefreshToken(userId: string, refreshToken: string): Promise<User> {
 		const hashedRefreshToken: string = await hash(refreshToken, 12);
 
 		return this.prismaService.user.update({
@@ -47,8 +47,8 @@ export class UserService {
 		});
 	}
 
-	async clearRefreshToken(userId: string) {
-		return this.prismaService.user.update({
+	async clearRefreshToken(userId: string): Promise<void> {
+		this.prismaService.user.update({
 			where: {
 				id: userId,
 			},

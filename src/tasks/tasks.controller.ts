@@ -1,6 +1,18 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	ParseUUIDPipe,
+	Patch,
+	Post,
+	Query,
+	Req,
+	UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Task, TaskStatus } from '@prisma/client';
+import { Task } from '@prisma/client';
 import { AccessTokenGuard } from 'src/guards/access-token.guard';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksQueryDto } from './dto/get-tasks-query.dto';
@@ -14,27 +26,31 @@ export class TasksController {
 	constructor(private tasksService: TasksService) {}
 
 	@Get('/')
-	public getTasks() {
-		return ['tasks'];
+	getTasks(@Req() req: Request, @Query() query: GetTasksQueryDto): Promise<Task[]> {
+		return this.tasksService.getTasks(query, req.user.sub);
 	}
 
-	// @Get('/')
-	// public getTasks(@Query() query: GetTasksQueryDto): Promise<Task[]> {
-	// 	return this.tasksService.getTasks(query);
-	// }
+	@Get('/:id')
+	getTask(@Req() req: Request, @Param('id') id: string) {
+		return this.tasksService.getTask(id, req.user.sub);
+	}
 
-	// @Post('/')
-	// public createTask(@Body() createTaskBody: CreateTaskDto): Promise<Task> {
-	// 	return this.tasksService.createTask(createTaskBody);
-	// }
+	@Post('/')
+	createTask(@Req() req: Request, @Body() createTaskBody: CreateTaskDto): Promise<Task> {
+		return this.tasksService.createTask(createTaskBody, req.user.sub);
+	}
 
-	// @Patch(':id')
-	// public updateTask(@Param('id', ParseUUIDPipe) id: string, @Body() updateTaskBody: UpdateTaskDto): Promise<Task> {
-	// 	return this.tasksService.updateTask(id, updateTaskBody);
-	// }
+	@Patch(':id')
+	public updateTask(
+		@Req() req: Request,
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() updateTaskBody: UpdateTaskDto,
+	): Promise<Task> {
+		return this.tasksService.updateTask(id, updateTaskBody, req.user.sub);
+	}
 
-	// @Delete(':id')
-	// public deleteTask(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
-	// 	return this.tasksService.deleteTask(id);
-	// }
+	@Delete(':id')
+	public deleteTask(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<Task> {
+		return this.tasksService.deleteTask(id, req.user.sub);
+	}
 }

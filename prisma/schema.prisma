@@ -19,13 +19,13 @@ enum UserRole {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(uuid())
+  email        String    @unique
   password     String
-  refreshToken String?  @map("refresh_token")
-  role         UserRole @default(USER)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  refreshToken String?   @map("refresh_token")
+  role         UserRole  @default(USER)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
 
   tasks Task[]
 
@@ -38,13 +38,13 @@ enum TaskStatus {
 }
 
 model Task {
-  id          String     @id @default(cuid())
+  id          String     @id @default(uuid())
   title       String
   description String?
   status      TaskStatus @default(UNDONE)
   priority    Int
   createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  updatedAt   DateTime?  @updatedAt @map("updated_at")
 
   userId String
   user   User   @relation(fields: [userId], references: [id])

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Task, TaskStatus } from '@prisma/client';
+import { Task } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -10,17 +10,12 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 export class TasksService {
 	constructor(private prismaService: PrismaService) {}
 
-	// public async createTask(createTaskBody: CreateTaskDto) {
-	// 	if (await this.checkTaskExisting({ title: createTaskBody.title })) {
-	// 		throw new BadRequestException('Task with the same title already exists.');
-	// 	}
-	// 	return this.prismaService.task.create({
-	// 		data: createTaskBody,
-	// 	});
-	// }
-
-	public getTasks(query: GetTasksQueryDto): Promise<Task[]> {
+	public getTasks(query: GetTasksQueryDto, userId: string): Promise<Task[]> {
 		const options: Prisma.TaskFindManyArgs = {};
+
+		options.where = {
+			userId,
+		};
 
 		if (query.sortField && query.sortDirection) {
 			options.orderBy = {
@@ -44,31 +39,66 @@ export class TasksService {
 			};
 		}
 
+		if (query.priority) {
+			options.where = {
+				...options.where,
+				priority: query.priority,
+			};
+		}
+
 		return this.prismaService.task.findMany(options);
 	}
 
-	public async updateTask(id: string, updateTaskBody: UpdateTaskDto): Promise<Task> {
-		if (!(await this.checkTaskExisting({ id }))) {
-			throw new BadRequestException("Task with this id doesn't exist");
-		}
+	getTask(taskId: string, userId: string): Promise<Task> {
+		return this.prismaService.task.findFirst({
+			where: {
+				id: taskId,
+				userId,
+			},
+		});
+	}
 
+	async createTask(createTaskBody: CreateTaskDto, userId: string): Promise<Task> {
+		if (await this.checkTaskExisting({ title: createTaskBody.title, userId })) {
+			throw new BadRequestException('Task with the same title already exists.');
+		}
+		return this.prismaService.task.create({
+			data: {
+				...createTaskBody,
+				user: {
+					connect: {
+						id: userId,
+					},
+				},
+			},
+		});
+	}
+
+	async updateTask(id: string, updateTaskBody: UpdateTaskDto, userId: string): Promise<Task> {
+		if (!(await this.checkTaskExisting({ id, userId }))) {
+			throw new BadRequestException('Task with this id does not exist');
+		}
 		return this.prismaService.task.update({
-			where: { id },
+			where: {
+				id,
+				userId,
+			},
 			data: updateTaskBody,
 		});
 	}
 
-	public async deleteTask(id: string): Promise<Task> {
-		if (!(await this.checkTaskExisting({ id }))) {
-			throw new BadRequestException("Task with this id doesn't exist");
+	public async deleteTask(id: string, userId: string): Promise<Task> {
+		if (!(await this.checkTaskExisting({ id, userId }))) {
+			throw new BadRequestException('Task with this id does not exist');
 		}
 
 		return this.prismaService.task.delete({
-			where: { id },
+			where: { id, userId },
 		});
 	}
 
 	public checkTaskExisting(condition: {
+		userId: string;
 		id?: string;
 		title?: string;
 	}): Promise<Task> {
