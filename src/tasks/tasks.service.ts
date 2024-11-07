@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Task } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import { limitTasksPerPage } from 'src/constants/tasks';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksQueryDto } from './dto/get-tasks-query.dto';
@@ -12,46 +13,7 @@ export class TasksService {
   constructor(private prismaService: PrismaService) {}
 
   async getTasks(query: GetTasksQueryDto, userId: string): Promise<GetTasksResponse> {
-    const limitTasksPerPage: number = 10;
-
-    const options: Prisma.TaskFindManyArgs = {};
-
-    options.where = {
-      userId,
-    };
-
-    if (query.sortField && query.sortDirection) {
-      options.orderBy = {
-        [query.sortField]: query.sortDirection as Prisma.SortOrder,
-      };
-    }
-
-    if (query.title) {
-      options.where = {
-        ...options.where,
-        title: {
-          contains: query.title,
-        },
-      };
-    }
-
-    if (query.status) {
-      options.where = {
-        ...options.where,
-        status: query.status,
-      };
-    }
-
-    if (query.priority) {
-      options.where = {
-        ...options.where,
-        priority: query.priority,
-      };
-    }
-
-    options.skip = query.page ? (query.page - 1) * limitTasksPerPage : 0;
-
-    options.take = limitTasksPerPage;
+    const options: Prisma.TaskFindManyArgs = this.getTasksFindManyOptions(query, userId);
 
     const total = await this.prismaService.task.count({
       where: options.where,
@@ -124,7 +86,7 @@ export class TasksService {
     });
   }
 
-  public checkTaskExisting(condition: {
+  private checkTaskExisting(condition: {
     userId: string;
     id?: string;
     title?: string;
@@ -132,5 +94,51 @@ export class TasksService {
     return this.prismaService.task.findFirst({
       where: condition,
     });
+  }
+
+  private getTasksFindManyOptions(
+    query: GetTasksQueryDto,
+    userId: string,
+  ): Prisma.TaskFindManyArgs {
+    const options: Prisma.TaskFindManyArgs = {};
+
+    options.where = {
+      userId,
+    };
+
+    if (query.sortField && query.sortDirection) {
+      options.orderBy = {
+        [query.sortField]: query.sortDirection as Prisma.SortOrder,
+      };
+    }
+
+    if (query.title) {
+      options.where = {
+        ...options.where,
+        title: {
+          contains: query.title,
+        },
+      };
+    }
+
+    if (query.status) {
+      options.where = {
+        ...options.where,
+        status: query.status,
+      };
+    }
+
+    if (query.priority) {
+      options.where = {
+        ...options.where,
+        priority: query.priority,
+      };
+    }
+
+    options.skip = query.page ? (query.page - 1) * limitTasksPerPage : 0;
+
+    options.take = limitTasksPerPage;
+
+    return options;
   }
 }

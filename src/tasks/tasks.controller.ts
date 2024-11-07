@@ -42,7 +42,7 @@ export class TasksController {
   }
 
   @Patch(':id')
-  public updateTask(
+  updateTask(
     @Req() req: Request,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTaskBody: UpdateTaskDto,
@@ -51,7 +51,7 @@ export class TasksController {
   }
 
   @Delete(':id')
-  public deleteTask(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<Task> {
+  deleteTask(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<Task> {
     return this.tasksService.deleteTask(id, req.user.sub);
   }
 }
