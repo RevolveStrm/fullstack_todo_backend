@@ -18,6 +18,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksQueryDto } from './dto/get-tasks-query.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TasksService } from './tasks.service';
+import { GetTasksResponse } from './types/get-tasks-response.type';
 
 @Controller('tasks')
 @ApiTags('tasks')
@@ -26,7 +27,7 @@ export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get('/')
-  getTasks(@Req() req: Request, @Query() query: GetTasksQueryDto): Promise<Task[]> {
+  getTasks(@Req() req: Request, @Query() query: GetTasksQueryDto): Promise<GetTasksResponse> {
     return this.tasksService.getTasks(query, req.user.sub);
   }
 

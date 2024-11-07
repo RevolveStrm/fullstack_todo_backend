@@ -1,6 +1,6 @@
 import { TaskStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class GetTasksQueryDto {
   @IsString()
@@ -23,4 +23,10 @@ export class GetTasksQueryDto {
   @IsInt()
   @IsOptional()
   priority?: number;
+
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  page?: number = 1;
 }
