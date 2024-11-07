@@ -1,21 +1,22 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import * as process from 'process';
 import { AppModule } from './app/app.module';
-import * as process from "process";
-import { ValidationPipe } from "@nestjs/common";
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule);
 
-    app.enableCors();
+	app.enableCors();
 
-    app.setGlobalPrefix(process.env.GLOBAL_PREFIX);
+	app.setGlobalPrefix(process.env.GLOBAL_PREFIX);
 
-    app.useGlobalPipes(
-      new ValidationPipe({
-          transform: true,
-      }),
-    );
+	app.useGlobalPipes(
+		new ValidationPipe({
+			transform: true,
+		}),
+	);
 
-    await app.listen(process.env.SERVER_PORT);
+	await app.listen(process.env.SERVER_PORT);
 }
+
 bootstrap();

@@ -14,16 +14,16 @@ datasource db {
 }
 
 enum TaskStatus {
-    DONE
-    UNDONE
+  DONE
+  UNDONE
 }
 
 model Task {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
   description String?
-  status      TaskStatus  @default(UNDONE)
+  status      TaskStatus @default(UNDONE)
   priority    Int
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
 }
