@@ -1,12 +1,8 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { UserService } from 'src/user/user.service';
+import { RefreshTokensResponse, SignInResponse, SignUpResponse } from './constants/auth-response';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 
@@ -22,7 +18,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(signInDto: SignInDto) {
+  async signIn(signInDto: SignInDto): Promise<SignInResponse> {
     const foundUser: User | null = await this.userService.findByEmail(signInDto.email);
 
     if (!foundUser) {
@@ -42,10 +38,16 @@ export class AuthService {
 
     await this.userService.updateRefreshToken(foundUser.id, tokens.refreshToken);
 
-    return tokens;
+    return {
+      user: {
+        id: foundUser.id,
+        email: foundUser.email,
+      },
+      tokens,
+    };
   }
 
-  async signUp(signUpDto: SignUpDto) {
+  async signUp(signUpDto: SignUpDto): Promise<SignUpResponse> {
     const foundUser: User | null = await this.userService.findByEmail(signUpDto.email);
 
     if (foundUser) {
@@ -58,14 +60,20 @@ export class AuthService {
 
     await this.userService.updateRefreshToken(newUser.id, tokens.refreshToken);
 
-    return tokens;
+    return {
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+      },
+      tokens,
+    };
   }
 
-  async logout(userId: string) {
+  async logout(userId: string): Promise<void> {
     await this.userService.clearRefreshToken(userId);
   }
 
-  async refreshToken(userId: string, refreshToken: string) {
+  async refreshToken(userId: string, refreshToken: string): Promise<RefreshTokensResponse> {
     const foundUser = await this.userService.findById(userId);
 
     if (!foundUser || !foundUser.refreshToken) {
@@ -83,7 +91,13 @@ export class AuthService {
 
     const tokens = await this.getTokens(foundUser.id, foundUser.email);
 
-    return tokens;
+    return {
+      user: {
+        id: foundUser.id,
+        email: foundUser.email,
+      },
+      tokens,
+    };
   }
 
   async getTokens(userId: string, userEmail: string): Promise<JwTTokens> {
