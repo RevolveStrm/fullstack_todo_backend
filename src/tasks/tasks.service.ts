@@ -1,41 +1,21 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Task } from '@prisma/client';
-import { Prisma } from '@prisma/client';
-import { limitTasksPerPage } from 'src/constants/tasks';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { GetTasksQueryDto } from './dto/get-tasks-query.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { GetTasksResponse } from './types/get-tasks-response.type';
 
 @Injectable()
 export class TasksService {
   constructor(private prismaService: PrismaService) {}
 
-  async getTasks(query: GetTasksQueryDto, userId: string): Promise<GetTasksResponse> {
-    const options: Prisma.TaskFindManyArgs = this.getTasksFindManyOptions(query, userId);
-
-    const total = await this.prismaService.task.count({
-      where: options.where,
+  async getTasks(userId: string): Promise<Task[]> {
+    const tasks: Task[] = await this.prismaService.task.findMany({
+      where: {
+        userId,
+      },
     });
 
-    const last = Math.ceil(total / limitTasksPerPage);
-
-    const hasNextPage: boolean = query.page + 1 <= last;
-
-    const hasPrevPage: boolean = query.page - 1 >= 1;
-
-    const tasks: Task[] = await this.prismaService.task.findMany(options);
-
-    return {
-      tasks,
-      page: query.page,
-      limit: limitTasksPerPage,
-      total,
-      last,
-      hasNextPage,
-      hasPrevPage,
-    };
+    return tasks;
   }
 
   getTask(taskId: string, userId: string): Promise<Task> {
@@ -94,51 +74,5 @@ export class TasksService {
     return this.prismaService.task.findFirst({
       where: condition,
     });
-  }
-
-  private getTasksFindManyOptions(
-    query: GetTasksQueryDto,
-    userId: string,
-  ): Prisma.TaskFindManyArgs {
-    const options: Prisma.TaskFindManyArgs = {};
-
-    options.where = {
-      userId,
-    };
-
-    if (query.sortField && query.sortDirection) {
-      options.orderBy = {
-        [query.sortField]: query.sortDirection as Prisma.SortOrder,
-      };
-    }
-
-    if (query.title) {
-      options.where = {
-        ...options.where,
-        title: {
-          contains: query.title,
-        },
-      };
-    }
-
-    if (query.status) {
-      options.where = {
-        ...options.where,
-        status: query.status,
-      };
-    }
-
-    if (query.priority) {
-      options.where = {
-        ...options.where,
-        priority: query.priority,
-      };
-    }
-
-    options.skip = query.page ? (query.page - 1) * limitTasksPerPage : 0;
-
-    options.take = limitTasksPerPage;
-
-    return options;
   }
 }
