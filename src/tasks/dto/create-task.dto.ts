@@ -1,11 +1,15 @@
-import { IsInt, IsString, Max, Min } from 'class-validator';
+import { TaskPriority, TaskStatus } from '@prisma/client';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreateTaskDto {
   @IsString()
   title: string;
 
-  @IsInt()
-  @Min(1)
-  @Max(10)
-  priority: number;
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsEnum(TaskPriority)
+  priority: TaskPriority;
 }

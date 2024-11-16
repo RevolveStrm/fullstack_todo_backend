@@ -18,6 +18,19 @@ enum UserRole {
   ADMIN
 }
 
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum TaskPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -32,21 +45,16 @@ model User {
   @@map("users")
 }
 
-enum TaskStatus {
-  DONE
-  UNDONE
-}
-
 model Task {
-  id          String     @id @default(uuid())
+  id          String       @id @default(uuid())
   title       String
   description String?
-  status      TaskStatus @default(UNDONE)
-  priority    Int
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime?  @updatedAt @map("updated_at")
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(LOW)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime?    @updatedAt @map("updated_at")
 
-  userId String
+  userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
   @@map("tasks")
