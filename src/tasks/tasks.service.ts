@@ -13,6 +13,9 @@ export class TasksService {
       where: {
         userId,
       },
+      include: {
+        tags: true,
+      },
     });
 
     return tasks;
@@ -23,6 +26,9 @@ export class TasksService {
       where: {
         id: taskId,
         userId,
+      },
+      include: {
+        tags: true,
       },
     });
   }

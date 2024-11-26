@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -31,6 +25,22 @@ enum TaskPriority {
   LOW
 }
 
+enum TagColor {
+  RED
+  ORANGE
+  YELLOW
+  GREEN
+  TEAL
+  BLUE
+  INDIGO
+  PURPLE
+  PINK
+  BROWN
+  GRAY
+  BLACK
+  WHITE
+}
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -41,6 +51,7 @@ model User {
   updatedAt    DateTime? @updatedAt @map("updated_at")
 
   tasks Task[]
+  tags  Tag[]
 
   @@map("users")
 }
@@ -51,11 +62,39 @@ model Task {
   description String?
   status      TaskStatus   @default(TODO)
   priority    TaskPriority @default(LOW)
+  deadlineAt  DateTime?    @map("deadline_at")
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime?    @updatedAt @map("updated_at")
 
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
+  tags TagOnTask[]
+
   @@map("tasks")
+}
+
+model Tag {
+  id    String   @id @default(uuid())
+  title String
+  color TagColor @default(GRAY)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  tasks TagOnTask[]
+
+  @@map("tags")
+}
+
+model TagOnTask {
+  id     String @id @default(uuid())
+  taskId String
+  tagId  String
+
+  task Task @relation(fields: [taskId], references: [id])
+  tag  Tag  @relation(fields: [tagId], references: [id])
+
+  @@unique([taskId, tagId])
+  @@map("tag_on_task")
 }
