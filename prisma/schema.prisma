@@ -44,14 +44,15 @@ enum TagColor {
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
-  password     String
-  refreshToken String?   @map("refresh_token")
+  password     String // encrypted by bcrypt
+  refreshToken String?   @map("refresh_token") // encrypted by jwt
   role         UserRole  @default(USER)
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime? @updatedAt @map("updated_at")
 
   tasks Task[]
   tags  Tag[]
+  files File[]
 
   @@map("users")
 }
@@ -69,8 +70,10 @@ model Task {
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
-  tags TagOnTask[]
+  tags  TagOnTask[]
+  files File[]
 
+  @@index([userId])
   @@map("tasks")
 }
 
@@ -97,4 +100,25 @@ model TagOnTask {
 
   @@unique([taskId, tagId])
   @@map("tag_on_task")
+}
+
+model File {
+  id            String    @id @default(uuid())
+  size          Int
+  extension     String
+  originalName  String    @map("original_name")
+  encryptedName String    @map("encrypted_name")
+  isPublic      Boolean   @default(false)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  deletedAt     DateTime?
+
+  taskId String? @map("task_id")
+  task   Task?   @relation(fields: [taskId], references: [id])
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([taskId, userId, size, originalName])
+  @@index([taskId])
+  @@map("files")
 }
