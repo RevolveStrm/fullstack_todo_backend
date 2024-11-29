@@ -15,6 +15,11 @@ export class TasksService {
       },
       include: {
         tags: true,
+        files: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
     });
 
@@ -29,6 +34,11 @@ export class TasksService {
       },
       include: {
         tags: true,
+        files: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
     });
   }
@@ -67,12 +77,23 @@ export class TasksService {
       throw new BadRequestException('Task with this id does not exist');
     }
 
+    await this.prismaService.file.updateMany({
+      where: {
+        taskId: id,
+        userId,
+      },
+      data: {
+        taskId: null,
+        deletedAt: new Date(),
+      },
+    });
+
     return this.prismaService.task.delete({
       where: { id, userId },
     });
   }
 
-  private checkTaskExisting(condition: {
+  public checkTaskExisting(condition: {
     userId: string;
     id?: string;
     title?: string;

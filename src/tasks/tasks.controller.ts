@@ -10,7 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Task } from '@prisma/client';
 import { AccessTokenGuard } from 'src/guards/access-token.guard';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -19,6 +19,7 @@ import { TasksService } from './tasks.service';
 
 @Controller('tasks')
 @ApiTags('tasks')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class TasksController {
   constructor(private tasksService: TasksService) {}
